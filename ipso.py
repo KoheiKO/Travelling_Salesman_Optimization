@@ -86,15 +86,17 @@ class PSO:
     def culc_dist(self, route):
         dist_sum = 0
         cities = self.cities
+        j = 0
         # print(type(cities))
         for i in range(len(route)-1):
             city1 = cities[route[i]]
             city2 = cities[route[i+1]]
             x1, y1 = city1[0] , city1[1]
             x2, y2 = city2[0] , city2[1]  
+            
             distance = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
             dist_sum += distance
-
+            j += 1
             # print("len(route) - 2 = " , len(route) - 2)
             # print("i = " , i)
 
@@ -103,6 +105,15 @@ class PSO:
             # print("city1 = " ,city1)
             # print(type(city1))
             # print("city1[0] = " ,city1[0])
+        city_start = cities[route[0]]
+        city_fin = cities[route[j]]
+        x1, y1 = city_start[0] , city_start[1]
+        x2, y2 = city_fin[0] , city_fin[1]  
+        
+        distance = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+        dist_sum  += distance
+
+       
         return dist_sum
     
 
@@ -132,13 +143,29 @@ class PSO:
         return route_min,route_dist_min
 
 
-
+    
     def run(self):
         # self.gbest = min(self.particles, key=lambda p: p.pbest_cost)
 
         # ランダムに並び替えたリストを格納するリスト
         all_particle_best = []
         dist_list = []
+
+        update_freq =  10
+        fig = plt.figure(1)
+        ax0 = fig.add_subplot(1, 2, 1) 
+        ax1 = fig.add_subplot(1, 2, 2)
+        
+        
+        ax0.clear() 
+
+        ax1.set_aspect('equal', adjustable='box')
+        ax1.set_xlim(-25, 25)
+        ax1.set_ylim(-25, 25)
+        ax1.clear()
+            # fig = plt.figure(1)
+        
+
         # 100行のリストを用意
         for _ in range(pso.population_size):
             # 1から50までの数字のリストを生成
@@ -179,35 +206,6 @@ class PSO:
 
         print(f"initial cost is {gbest_dist}")
         # print(f"initial cost is {self.gbest.pbest_cost}")
-        plt.ion()
-        plt.draw()
-
-        # for t in range(self.iterations):
-        #     self.gbest = min(self.particles, key=lambda p: p.pbest_cost)
-        #     print("gbest = ",self.gbest)
-        #     particle_num = 0
-        #     if t % 20 == 0:
-        #         plt.figure(0)
-        #         plt.plot(pso.gcost_iter, 'g')
-        #         plt.ylabel('Distance')
-        #         plt.xlabel('Generation')
-        #         fig = plt.figure(0)
-        #         fig.suptitle('pso iter')
-        #         x_list, y_list = [], []
-        #         for city in self.gbest.pbest:
-        #             x_list.append(city.x)
-        #             y_list.append(city.y)
-        #         x_list.append(pso.gbest.pbest[0].x)
-        #         y_list.append(pso.gbest.pbest[0].y)
-        #         fig = plt.figure(1)
-        #         fig.clear()
-        #         fig.suptitle(f'pso TSP iter {t}')
-
-        #         plt.plot(x_list, y_list, 'ro')
-        #         plt.plot(x_list, y_list, 'g')
-        #         plt.draw()
-        #         plt.pause(.001)
-        #     self.gcost_iter.append(self.gbest.pbest_cost)
         gbest_dist_plot, ite_plot = [], []
         for t in range(self.iterations):
             print("iteration = ", ite)
@@ -221,100 +219,61 @@ class PSO:
             gbest_coordinate = pso.route_coordinate(gbest_route)
 
 
-            # print("gbest_coordinate = " , gbest_coordinate[1])
-            # print("len(gbest_route) = " , len(gbest_route))
-  
-            # if t % 20 == 0:
-            #     plt.figure(0)
-            #     gbest_dist_plot , ite_plot= [], []
-            #     plt.plot(gbest_dist_plot, ite_plot, 'g')
-            #     plt.ylabel('Distance')
-            #     plt.xlabel('Generation')
-            #     gbest_dist_plot , ite_plot= [], []
-                
-            #     gbest_dist_plot.append(gbest_dist)
-            #     ite_plot.append(ite)
+            
 
-                
-            #     fig = plt.figure(0)
-            #     fig.suptitle('pso iter')
-               
-            #     # x_list =  gbest_route[:,0]
-            #     # y_list =  gbest_route[:,1]
-
-
-            #     fig = plt.figure(1)
-            #     fig.suptitle('pso TSP')
-
-            #     # plt.plot(gbest_dist_plot, ite_plot)
-            #     # plt.plot(x_list, y_list)
-               
-            #     x_list, y_list = [], []
-            #     for i in range(len(gbest_route)):
-            #         city = gbest_coordinate[i]
-            #         x_list.append(city[0])
-            #         y_list.append(city[1])
-
-            #     #     x_list.append(city.x)
-            #     #     y_list.append(city.y)
-            #     # x_list.append(pso.gbest.pbest[0].x)
-            #     # y_list.append(pso.gbest.pbest[0].y)
-                
-            #     fig.clear()
-            #     fig.suptitle(f'pso TSP iter {t}')
-
-            #     plt.plot(x_list, y_list, 'ro')
-            #     plt.plot(x_list, y_list, 'g')
-            #     plt.draw()
-            #     plt.show(block=True)
-            #     plt.pause(.001)
-                
-            if t % 20 == 0:
-                plt.figure(0)
-                
-
+            if (t+1) % update_freq == 0:
+                # plt.figure(0)
                 gbest_dist_plot.append(gbest_dist)
                 ite_plot.append(ite)
+                # ax1.set_title(f'pso TSP iter {t}')
+                ax1.set_title('pso TSP iter')
+                # ax0.set_xlim(0, 1000)
+                # ax0.set_ylim(0, self.iterations)
+                ax0.plot(ite_plot, gbest_dist_plot, 'g')
+                ax0.set_ylabel('Distance')
+                ax0.set_xlabel('Generation')
 
-                plt.plot(ite_plot, gbest_dist_plot, 'g')
-                plt.ylabel('Distance')
-                plt.xlabel('Generation')
 
-                fig = plt.figure(1)
-                fig.suptitle(f'pso TSP iter {t}')
 
                 x_list, y_list = [], []
                 for i in range(len(gbest_route)):
                     city = gbest_coordinate[i]
                     x_list.append(city[0])
                     y_list.append(city[1])
+                x_list.append(x_list[0])
+                y_list.append(y_list[0])
 
-                plt.clf()  # Clear the figure
-                plt.plot(x_list, y_list, 'ro')
-                plt.plot(x_list, y_list, 'g')
-                plt.draw()
+                
+                if t > self.iterations -update_freq -1:
+                  
+                    ax1.cla()  # Clear the figure
+                    ax1.plot(x_list, y_list, 'ro')
+                    ax1.plot(x_list, y_list, 'b')
+
+                    # ax1.draw()
+                    # ax1.pause(0.001)
+                    # ax1.show(block=False)  
+                    # time.sleep(100)
+                else:
+                   
+                    ax1.cla()  # Clear the figure
+                    ax1.plot(x_list, y_list, 'ro')
+                    ax1.plot(x_list, y_list, 'g')
+                    # ax1.draw()
+
+                ax1.set_title(f'pso TSP iter {t+1}')
+                ax1.grid()
+                
                 plt.pause(0.001)
                 plt.show(block=False)  # Set block to False to allow code execution to continue
-                    
-            # self.gcost_iter.append(self.gbest.pbest_cost)
+
+        
 
             for particle in self.particles:
-                # print("particle_num = ", particle_num)
                 
-                # print("Iteration" , particle)
-                # particle.clear_velocity()
-                # temp_velocity = []
-                numbers = list(range(0, len(self.cities)))
-            
-                # リストをランダムに並び替え
-                random.shuffle(numbers)
                 
-                new_route = numbers
-                
-                # print("new_route = ", new_route)
+                new_route = all_particle_best[particle_num]
 
-                
-                # time.sleep(1) 
 
                 r1 = int(np.round(c1 * np.random.rand() * (n + 1)))
                 while r1 < 4:
@@ -400,40 +359,8 @@ class PSO:
             
 if __name__ == "__main__":
     cities = read_cities()
-    pso = PSO(iterations=1000, population_size=100, pbest_probability=0.9, gbest_probability=0.02, cities=cities)
+    pso = PSO(iterations=1000, population_size=10, pbest_probability=0.9, gbest_probability=0.02, cities=cities)
     pso.run()
-    
-    # particle = Particle()
-    # print(f'cost: {pso.gbest.pbest_cost}\t| gbest: {pso.gbest.pbest}')
 
-    # x_list, y_list = [], []
-    # for city in pso.gbest.pbest:
-    #     x_list.append(city.x)
-    #     y_list.append(city.y)
-    # x_list.append(pso.gbest.pbest[0].x)
-    # y_list.append(pso.gbest.pbest[0].y)
-    # fig = plt.figure(1)
-    # fig.suptitle('pso TSP')
+    time.sleep(1000)
 
-    # plt.plot(x_list, y_list, 'ro')
-    # plt.plot(x_list, y_list)
-    # plt.show(block=True)
-    # x_list, y_list = [], []
-    # for i in range(len(gbest_route)):
-    #     city = gbest_coordinate[i]
-    #     x_list.append(city[0])
-    #     y_list.append(city[1])
-
-    # #     x_list.append(city.x)
-    # #     y_list.append(city.y)
-    # # x_list.append(pso.gbest.pbest[0].x)
-    # # y_list.append(pso.gbest.pbest[0].y)
-    # fig = plt.figure(1)
-    # fig.clear()
-    # fig.suptitle(f'pso TSP iter {t}')
-
-    # plt.plot(x_list, y_list, 'ro')
-    # plt.plot(x_list, y_list, 'g')
-    # plt.draw()
-    # plt.pause(.001)
-    # plt.show(block=True)
