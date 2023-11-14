@@ -65,7 +65,7 @@ class PSO:
         coor_route = []
         # print( len(city))
         for i  in range(len(self.cities)):
-            for j in range(len(self.cities)):
+            for j in range(len(route)):
                 if route[j] == self.cities[i]:
                     coor_route.append(j) 
         return(coor_route)
@@ -75,7 +75,7 @@ class PSO:
         cities = self.cities
         # print("cities = " ,cities) 
         # print("len(order) = ", len(order))
-        for i in range(len(order)-1):
+        for i in range(len(order)):
             
             coordinate = cities[order[i]]
             route_coordinate.append(coordinate)
@@ -83,7 +83,7 @@ class PSO:
         return route_coordinate
 
 
-    def calc_dist(self, route):
+    def culc_dist(self, route):
         dist_sum = 0
         cities = self.cities
         # print(type(cities))
@@ -108,34 +108,39 @@ class PSO:
 
 
     def insert(self,origin,insert_route):
-        route_dist_min = np.Inf
+        route_dist = []
+        route_ap = []
+        route = []
+        # route_min = []
         ## insert pb_dd into x_d
-        for i in range(len(origin) + len(insert_route)):
-            if i != len(origin) + len(insert_route):
-                route = origin [0:i] + insert_route + origin [i: len(origin) + len(insert_route) -1]
+        # print("len(origin) = " , len(origin))
+        for i in range(len(origin)):
+            if i != len(origin) :
+                route = origin [0:i+1] + insert_route + origin [i+1: len(origin) ]
             else:
-                route = origin [0:i] + insert_route
-            
-            route_dist = pso.calc_dist(route) 
-            
+                route = origin [0:len(origin)] + insert_route
 
-            if route_dist < route_dist_min:
-                route_dist_min = route_dist
-                route_min = route
-
+            # print("route = " , route)
+            route_ap.append(route)
+            route_dist.append(pso.culc_dist(route)) 
+            
+        route_dist_min = min(route_dist) 
+        min_index =   route_dist.index(route_dist_min)
+        route_min = route_ap[min_index]
+       
         
         return route_min,route_dist_min
 
 
 
     def run(self):
-        
+        # self.gbest = min(self.particles, key=lambda p: p.pbest_cost)
 
         # ランダムに並び替えたリストを格納するリスト
         all_particle_best = []
-
+        dist_list = []
         # 100行のリストを用意
-        for _ in range(100):
+        for _ in range(pso.population_size):
             # 1から50までの数字のリストを生成
             numbers = list(range(0, len(self.cities)))
             
@@ -144,11 +149,24 @@ class PSO:
             
             # シャッフルされたリストをrandom_listsに追加
             all_particle_best.append(numbers)
-        # print(all_particle_best[99])
 
-        time.sleep(2) 
-        ite = 1
+            dist_list.append(pso.culc_dist(numbers))
+        # print(all_particle_best[99])
+        # print(dist_list)
+
+        gbest_dist = min(dist_list)
+        gbest_route_index = dist_list.index(gbest_dist)
+        gbest_route = all_particle_best[gbest_route_index]
+        # print("gbest_dist = ", gbest_dist)
+        # print("gbest_route_index = ", gbest_route_index)
+        # print("gbest_route = ", gbest_route)
+        # x_list =  pso.route_coordinate(gbest_route)
+        # print("x_list = ", x_list)
+        # print("x_list = ", x_list[1])
         
+
+        ite = 1
+        # print("all_particle_best = ", all_particle_best)
         
         c1 = 0.7 
         c2 = 0.1
@@ -156,52 +174,146 @@ class PSO:
         n = len(self.cities)
 
         print(r1 , r2)
-        self.gbest = min(self.particles, key=lambda p: p.pbest_cost)
-        print(f"initial cost is {self.gbest.pbest_cost}")
+        
+        # print("self.particles = ", self.particles)
+
+        print(f"initial cost is {gbest_dist}")
+        # print(f"initial cost is {self.gbest.pbest_cost}")
         plt.ion()
         plt.draw()
+
+        # for t in range(self.iterations):
+        #     self.gbest = min(self.particles, key=lambda p: p.pbest_cost)
+        #     print("gbest = ",self.gbest)
+        #     particle_num = 0
+        #     if t % 20 == 0:
+        #         plt.figure(0)
+        #         plt.plot(pso.gcost_iter, 'g')
+        #         plt.ylabel('Distance')
+        #         plt.xlabel('Generation')
+        #         fig = plt.figure(0)
+        #         fig.suptitle('pso iter')
+        #         x_list, y_list = [], []
+        #         for city in self.gbest.pbest:
+        #             x_list.append(city.x)
+        #             y_list.append(city.y)
+        #         x_list.append(pso.gbest.pbest[0].x)
+        #         y_list.append(pso.gbest.pbest[0].y)
+        #         fig = plt.figure(1)
+        #         fig.clear()
+        #         fig.suptitle(f'pso TSP iter {t}')
+
+        #         plt.plot(x_list, y_list, 'ro')
+        #         plt.plot(x_list, y_list, 'g')
+        #         plt.draw()
+        #         plt.pause(.001)
+        #     self.gcost_iter.append(self.gbest.pbest_cost)
+        gbest_dist_plot, ite_plot = [], []
         for t in range(self.iterations):
             print("iteration = ", ite)
-            particle_num = 1
             
+            particle_num = 0
             # time.sleep(1) 
 
+            gbest_dist = min(dist_list)
+            gbest_route_index = dist_list.index(gbest_dist)
+            gbest_route = all_particle_best[gbest_route_index]
+            gbest_coordinate = pso.route_coordinate(gbest_route)
 
-            self.gbest = min(self.particles, key=lambda p: p.pbest_cost)
-            # print("gbest = ", self.cities)
+
+            # print("gbest_coordinate = " , gbest_coordinate[1])
+            # print("len(gbest_route) = " , len(gbest_route))
+  
+            # if t % 20 == 0:
+            #     plt.figure(0)
+            #     gbest_dist_plot , ite_plot= [], []
+            #     plt.plot(gbest_dist_plot, ite_plot, 'g')
+            #     plt.ylabel('Distance')
+            #     plt.xlabel('Generation')
+            #     gbest_dist_plot , ite_plot= [], []
+                
+            #     gbest_dist_plot.append(gbest_dist)
+            #     ite_plot.append(ite)
+
+                
+            #     fig = plt.figure(0)
+            #     fig.suptitle('pso iter')
+               
+            #     # x_list =  gbest_route[:,0]
+            #     # y_list =  gbest_route[:,1]
+
+
+            #     fig = plt.figure(1)
+            #     fig.suptitle('pso TSP')
+
+            #     # plt.plot(gbest_dist_plot, ite_plot)
+            #     # plt.plot(x_list, y_list)
+               
+            #     x_list, y_list = [], []
+            #     for i in range(len(gbest_route)):
+            #         city = gbest_coordinate[i]
+            #         x_list.append(city[0])
+            #         y_list.append(city[1])
+
+            #     #     x_list.append(city.x)
+            #     #     y_list.append(city.y)
+            #     # x_list.append(pso.gbest.pbest[0].x)
+            #     # y_list.append(pso.gbest.pbest[0].y)
+                
+            #     fig.clear()
+            #     fig.suptitle(f'pso TSP iter {t}')
+
+            #     plt.plot(x_list, y_list, 'ro')
+            #     plt.plot(x_list, y_list, 'g')
+            #     plt.draw()
+            #     plt.show(block=True)
+            #     plt.pause(.001)
+                
             if t % 20 == 0:
                 plt.figure(0)
-                plt.plot(pso.gcost_iter, 'g')
+                
+
+                gbest_dist_plot.append(gbest_dist)
+                ite_plot.append(ite)
+
+                plt.plot(ite_plot, gbest_dist_plot, 'g')
                 plt.ylabel('Distance')
                 plt.xlabel('Generation')
-                fig = plt.figure(0)
-                fig.suptitle('pso iter')
-                x_list, y_list = [], []
-                for city in self.gbest.pbest:
-                    x_list.append(city.x)
-                    y_list.append(city.y)
-                x_list.append(pso.gbest.pbest[0].x)
-                y_list.append(pso.gbest.pbest[0].y)
+
                 fig = plt.figure(1)
-                fig.clear()
                 fig.suptitle(f'pso TSP iter {t}')
 
+                x_list, y_list = [], []
+                for i in range(len(gbest_route)):
+                    city = gbest_coordinate[i]
+                    x_list.append(city[0])
+                    y_list.append(city[1])
+
+                plt.clf()  # Clear the figure
                 plt.plot(x_list, y_list, 'ro')
                 plt.plot(x_list, y_list, 'g')
                 plt.draw()
-                plt.pause(.001)
-            self.gcost_iter.append(self.gbest.pbest_cost)
+                plt.pause(0.001)
+                plt.show(block=False)  # Set block to False to allow code execution to continue
+                    
+            # self.gcost_iter.append(self.gbest.pbest_cost)
 
             for particle in self.particles:
-                print("particle_num = ", particle_num)
+                # print("particle_num = ", particle_num)
                 
                 # print("Iteration" , particle)
                 # particle.clear_velocity()
                 # temp_velocity = []
-                gbest = self.gbest.pbest[:]
-                new_route = particle.route[:]
+                numbers = list(range(0, len(self.cities)))
+            
+                # リストをランダムに並び替え
+                random.shuffle(numbers)
                 
-                print("new_route = ", new_route)
+                new_route = numbers
+                
+                # print("new_route = ", new_route)
+
+                
                 # time.sleep(1) 
 
                 r1 = int(np.round(c1 * np.random.rand() * (n + 1)))
@@ -219,18 +331,19 @@ class PSO:
                 # print("r1 = " , r1)
 
                 # if i > 0 :
-                pbest_route = pso.route_order(particle.pbest)
-                print("pbest_route = " , pbest_route)
-                gbest_route = pso.route_order(gbest)
+                # print("particle.pbest = " ,particle.pbest)
+                pbest_route = all_particle_best[particle_num]
+                # print("pbest_route = " , pbest_route)
+               
                 # print("pbest_route = " , pbest_route)
                 # print("gbest_route = " , gbest_route)
                 pb = pbest_route
-                pb_d = pbest_route[sr1:sr1 + r1] if sr1 + r1 - 1 <= n else pbest_route[sr1:n] + pbest_route[:sr1 + r1 - 1 - n]
+                pb_d = pbest_route[sr1:sr1 + r1] if sr1 + r1 - 1 <= n else pbest_route[sr1:n] + pbest_route[0:sr1 + r1 - n]
                 
-
+                # gbest_route   = self.gbest.pbest[:]
                 
                 lb = gbest_route
-                lb_d = gbest_route[sr2:sr2 + r2] if sr2 + r2 - 1 <= n else gbest_route[sr2:n] + gbest_route[:sr2 + r2 - 1 - n]
+                lb_d = gbest_route[sr2:sr2 + r2] if sr2 + r2 - 1 <= n else gbest_route[sr2:n] + gbest_route[0:sr2 + r2 - n]
                 pb_dd = [x for x in pb_d if x not in lb_d]
 
                  
@@ -240,84 +353,87 @@ class PSO:
                 # print("pb_dd = " , pb_dd )
                 # print("ld = ", lb_d)
                     
-                x = pso.route_order(new_route)
+                x = new_route
+                # print("x = " , x)
                 x_subs_lb_d = [i for i in x if i not in lb_d]
                 x_d = [i for i in x_subs_lb_d if i not in pb_dd]
-               
+                # print("x_d = " , x_d)
 
                 # print("x_d = ", x_d)
                 
                 x_dd , x_dd_dist = pso.insert(x_d,pb_dd)
 
                 
+                # print("x = " , x)
+                # print("pb_d  = " , pb_d)
+                # print("lb_d  = " , lb_d)
+                # print("pb_dd  = " , pb_dd)
+                # print("x_d  = " , x_d)
+                # print("x_dd  = " , x_dd)
 
-                print("x_d  = " , x_d)
-                print("x_dd  = " , x_dd)
-                print("lb_d  = " , lb_d)
-                print("pb_dd  = " , pb_dd)
+
                
-                x_best , x_best_dist = pso.insert(x_dd,lb_d)
-                print("x_best = " , x_best)
+                x_new , x_new_dist = pso.insert(x_dd,lb_d)
+                # print("x_new = " , x_new)
+                # print("x_new[3:8] = " , x_new[3:8])
 
 
+                all_particle_best [particle_num]= x_new
+                # print("all_particle_best = " , all_particle_best)
+                x_new_dist = pso.culc_dist(x_new)
+                if x_new_dist < dist_list[particle_num]:
+                    all_particle_best[particle_num] = x_new
+                    dist_list[particle_num] = x_new_dist
 
-
-                # print("x_dd_min_dist = ", x_dd_dist)
                 
-                
-                # for i in range(n):
 
-                #     # print("particle.pbest = " , particle.pbest)
-
-                    
-
-                #     if new_route[i] != particle.pbest[i]:
-                #         swap = (i, particle.pbest.index(new_route[i]), self.pbest_probability)
-                #         temp_velocity.append(swap)
-                #         new_route[swap[0]], new_route[swap[1]] = \
-                #             new_route[swap[1]], new_route[swap[0]]
-
-                # for i in range(n):
-                #     if new_route[i] != gbest[i]:
-                #         swap = (i, gbest.index(new_route[i]), self.gbest_probability)
-                #         temp_velocity.append(swap)
-                #         gbest[swap[0]], gbest[swap[1]] = gbest[swap[1]], gbest[swap[0]]
-
-                # particle.velocity = temp_velocity
-
-                # for swap in temp_velocity:
-                #     if random.random() <= swap[2]:
-                #         new_route[swap[0]], new_route[swap[1]] = \
-                #             new_route[swap[1]], new_route[swap[0]]
-                # print(pso.route_coordinate(x_best))
-
-                particle.route = pso.route_coordinate(x_best)
-                particle.update_costs_and_pbest()
+                # particle.route = pso.route_coordinate(x_new)
+                # particle.update_costs_and_pbest()
                 # print(particle.path_cost())
 
-                
+                time.sleep(0) 
                 particle_num += 1
+                
             ite += 1
+            time.sleep(0) 
 
             
 if __name__ == "__main__":
     cities = read_cities()
-    pso = PSO(iterations=100, population_size=100, pbest_probability=0.9, gbest_probability=0.02, cities=cities)
+    pso = PSO(iterations=1000, population_size=100, pbest_probability=0.9, gbest_probability=0.02, cities=cities)
     pso.run()
     
     # particle = Particle()
-    print(f'cost: {pso.gbest.pbest_cost}\t| gbest: {pso.gbest.pbest}')
+    # print(f'cost: {pso.gbest.pbest_cost}\t| gbest: {pso.gbest.pbest}')
 
-    x_list, y_list = [], []
-    for city in pso.gbest.pbest:
-        x_list.append(city.x)
-        y_list.append(city.y)
-    x_list.append(pso.gbest.pbest[0].x)
-    y_list.append(pso.gbest.pbest[0].y)
-    fig = plt.figure(1)
-    fig.suptitle('pso TSP')
+    # x_list, y_list = [], []
+    # for city in pso.gbest.pbest:
+    #     x_list.append(city.x)
+    #     y_list.append(city.y)
+    # x_list.append(pso.gbest.pbest[0].x)
+    # y_list.append(pso.gbest.pbest[0].y)
+    # fig = plt.figure(1)
+    # fig.suptitle('pso TSP')
 
-    plt.plot(x_list, y_list, 'ro')
-    plt.plot(x_list, y_list)
-    plt.show(block=True)
+    # plt.plot(x_list, y_list, 'ro')
+    # plt.plot(x_list, y_list)
+    # plt.show(block=True)
+    # x_list, y_list = [], []
+    # for i in range(len(gbest_route)):
+    #     city = gbest_coordinate[i]
+    #     x_list.append(city[0])
+    #     y_list.append(city[1])
 
+    # #     x_list.append(city.x)
+    # #     y_list.append(city.y)
+    # # x_list.append(pso.gbest.pbest[0].x)
+    # # y_list.append(pso.gbest.pbest[0].y)
+    # fig = plt.figure(1)
+    # fig.clear()
+    # fig.suptitle(f'pso TSP iter {t}')
+
+    # plt.plot(x_list, y_list, 'ro')
+    # plt.plot(x_list, y_list, 'g')
+    # plt.draw()
+    # plt.pause(.001)
+    # plt.show(block=True)
