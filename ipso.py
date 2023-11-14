@@ -226,7 +226,7 @@ class PSO:
                 gbest_dist_plot.append(gbest_dist)
                 ite_plot.append(ite)
                 # ax1.set_title(f'pso TSP iter {t}')
-                ax1.set_title('pso TSP iter')
+                ax1.set_title('IPSO iter')
                 # ax0.set_xlim(0, 1000)
                 # ax0.set_ylim(0, self.iterations)
                 ax0.plot(ite_plot, gbest_dist_plot, 'g')
